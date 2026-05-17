@@ -50,23 +50,23 @@ export async function fetchLatestInvoices() {
 
 export async function fetchCardData() {
   try {
-    const invoiceCountPromise = sql`SELECT COUNT(*) FROM invoices`;
-    const customerCountPromise = sql`SELECT COUNT(*) FROM customers`;
+    const invoiceCountPromise = sql`SELECT COUNT(*) AS count FROM invoices`;
+    const customerCountPromise = sql`SELECT COUNT(*) AS count FROM customers`;
     const invoiceStatusPromise = sql`SELECT
          SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END) AS "paid",
          SUM(CASE WHEN status = 'pending' THEN amount ELSE 0 END) AS "pending"
       FROM invoices`;
 
-    const data = await Promise.all([
+    const [invoiceCount, customerCount, invoiceStatus] = await Promise.all([
       invoiceCountPromise,
       customerCountPromise,
       invoiceStatusPromise,
     ]);
 
-    const numberOfInvoices = Number(data.count ?? '0');
-    const numberOfCustomers = Number(data[1].count ?? '0');
-    const totalPaidInvoices = formatCurrency(data.paid ?? '0');
-    const totalPendingInvoices = formatCurrency(data.pending ?? '0');
+    const numberOfInvoices = Number(invoiceCount[0].count ?? '0');
+    const numberOfCustomers = Number(customerCount[0].count ?? '0');
+    const totalPaidInvoices = formatCurrency(invoiceStatus[0].paid ?? '0');
+    const totalPendingInvoices = formatCurrency(invoiceStatus[0].pending ?? '0');
 
     return {
       numberOfCustomers,
@@ -119,7 +119,7 @@ export async function fetchFilteredInvoices(
 export async function fetchInvoicesPages(query: string) {
   try {
     const data = await sql`
-    SELECT COUNT(*)
+    SELECT COUNT(*) AS count
     FROM invoices
     JOIN customers ON invoices.customer_id = customers.id
     WHERE
