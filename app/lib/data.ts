@@ -51,11 +51,8 @@ export async function fetchLatestInvoices() {
 export async function fetchCardData() {
   try {
     const invoiceCountPromise = sql`SELECT COUNT(*) AS count FROM invoices`;
-    const customerCountPromise = sql`SELECT COUNT(*) AS count FROM customers`;
-    const invoiceStatusPromise = sql`SELECT
-         SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END) AS "paid",
-         SUM(CASE WHEN status = 'pending' THEN amount ELSE 0 END) AS "pending"
-      FROM invoices`;
+    const customerCountPromise = sql `SELECT COUNT(*) AS count FROM customers`;
+    const invoiceStatusPromise = sql`SELECT SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END) AS "paid", SUM(CASE WHEN status = 'pending' THEN amount ELSE 0 END) AS "pending" FROM invoices`;
 
     const [invoiceCount, customerCount, invoiceStatus] = await Promise.all([
       invoiceCountPromise,
